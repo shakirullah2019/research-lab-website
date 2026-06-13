@@ -1,0 +1,146 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import TextArea from "@/components/ui/TextArea";
+import ImageUploader from "@/components/admin/ImageUploader";
+
+interface Props {
+  initialData?: {
+    id: string;
+    title: string;
+    slug: string;
+    authors: string;
+    journal?: string;
+    year: number;
+    doi?: string;
+    abstract: string;
+    pdf_url?: string;
+    image_url?: string;
+    status: string;
+    featured: boolean;
+  };
+}
+
+export default function PublicationForm({ initialData }: Props) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    title: initialData?.title || "",
+    slug: initialData?.slug || "",
+    authors: initialData?.authors || "",
+    journal: initialData?.journal || "",
+    year: initialData?.year || new Date().getFullYear(),
+    doi: initialData?.doi || "",
+    abstract: initialData?.abstract || "",
+    pdf_url: initialData?.pdf_url || "",
+    image_url: initialData?.image_url || "",
+    status: initialData?.status || "draft",
+    featured: initialData?.featured || false,
+  });
+
+  const handleImageUpload = async (file: File) => {
+    const { uploadFile } = await import("@/lib/actions");
+    const url = await uploadFile(file);
+    setForm((prev) => ({ ...prev, image_url: url }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { savePublication } = await import("@/lib/actions");
+      await savePublication(initialData?.id || null, {
+        ...form,
+        status: form.status as "draft" | "published",
+        slug: form.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+      });
+      router.push("/admin/publications");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
+      <Input
+        label="Title"
+        required
+        value={form.title}
+        onChange={(e) => setForm({ ...form, title: e.target.value })}
+      />
+      <Input
+        label="Authors"
+        required
+        value={form.authors}
+        onChange={(e) => setForm({ ...form, authors: e.target.value })}
+      />
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label="Journal"
+          value={form.journal || ""}
+          onChange={(e) => setForm({ ...form, journal: e.target.value })}
+        />
+        <Input
+          label="Year"
+          type="number"
+          required
+          value={form.year}
+          onChange={(e) => setForm({ ...form, year: parseInt(e.target.value) || 2024 })}
+        />
+      </div>
+      <Input
+        label="DOI"
+        value={form.doi || ""}
+        onChange={(e) => setForm({ ...form, doi: e.target.value })}
+      />
+      <Input
+        label="PDF URL"
+        value={form.pdf_url || ""}
+        onChange={(e) => setForm({ ...form, pdf_url: e.target.value })}
+      />
+      <TextArea
+        label="Abstract"
+        required
+        value={form.abstract}
+        onChange={(e) => setForm({ ...form, abstract: e.target.value })}
+      />
+      <ImageUploader onUpload={handleImageUpload} label="Image" />
+      <div className="flex items-center gap-6">
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+          <input
+            type="checkbox"
+            checked={form.status === "published"}
+            onChange={(e) =>
+              setForm({ ...form, status: e.target.checked ? "published" : "draft" })
+            }
+            className="rounded border-gray-300"
+          />
+          Published
+        </label>
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+          <input
+            type="checkbox"
+            checked={form.featured}
+            onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+            className="rounded border-gray-300"
+          />
+          Featured
+        </label>
+      </div>
+      <div className="flex items-center gap-3">
+        <Button type="submit" disabled={loading}>
+          {loading ? "Saving..." : initialData ? "Update" : "Create"}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.push("/admin/publications")}>
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+}
