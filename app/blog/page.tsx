@@ -1,6 +1,8 @@
 import BlogCard from "@/components/public/BlogCard";
 import { getPublishedBlogPosts } from "@/lib/actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function BlogPage() {
   const blogs = await getPublishedBlogPosts();
 

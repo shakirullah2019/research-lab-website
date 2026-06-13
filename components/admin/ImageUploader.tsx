@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import { Upload, X } from "lucide-react";
-import Button from "../ui/Button";
 
 interface Props {
   onUpload: (file: File) => Promise<void>;
@@ -17,6 +16,7 @@ export default function ImageUploader({
 }: Props) {
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,11 +24,13 @@ export default function ImageUploader({
     if (!file) return;
 
     setPreview(URL.createObjectURL(file));
+    setError(null);
     setUploading(true);
     try {
       await onUpload(file);
-    } catch (err) {
-      console.error("Upload failed:", err);
+    } catch (err: any) {
+      setError(err.message || "Upload failed. Check that a storage bucket named 'public' exists in Supabase.");
+      setPreview(null);
     } finally {
       setUploading(false);
     }
@@ -36,6 +38,7 @@ export default function ImageUploader({
 
   const clearPreview = () => {
     setPreview(null);
+    setError(null);
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -78,6 +81,9 @@ export default function ImageUploader({
           </div>
         )}
       </div>
+      {error && (
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p>
+      )}
     </div>
   );
 }

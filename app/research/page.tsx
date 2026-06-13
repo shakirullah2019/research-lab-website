@@ -2,6 +2,8 @@ import Link from "next/link";
 import ResearchCard from "@/components/public/ResearchCard";
 import { getPublishedResearch } from "@/lib/actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function ResearchPage() {
   const research = await getPublishedResearch();
 

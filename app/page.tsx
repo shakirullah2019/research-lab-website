@@ -13,6 +13,8 @@ import {
 } from "@/lib/actions";
 import type { HomepageSection } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [research, publications, blogs, team, homepage] = await Promise.all([
     getPublishedResearch(),

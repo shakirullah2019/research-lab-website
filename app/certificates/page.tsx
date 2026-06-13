@@ -1,6 +1,8 @@
 import CertificateCard from "@/components/public/CertificateCard";
 import { getCertificateList } from "@/lib/actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function CertificatesPage() {
   const certificates = await getCertificateList();
 
