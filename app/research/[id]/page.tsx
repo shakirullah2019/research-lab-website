@@ -13,6 +13,11 @@ export default async function ResearchDetailPage({
 
   if (!research) notFound();
 
+  const imgStyle: React.CSSProperties = {};
+  if (research.image_width) imgStyle.maxWidth = research.image_width;
+  if (research.image_height) imgStyle.maxHeight = research.image_height;
+  const imgFloat = research.image_position === "left" ? "float-left mr-6 mb-4" : research.image_position === "right" ? "float-right ml-6 mb-4" : "mx-auto mb-8";
+
   return (
     <article className="py-16 md:py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,10 +28,6 @@ export default async function ResearchDetailPage({
           <ArrowLeft size={16} /> Back to Research
         </Link>
 
-        <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 mb-4">
-          {research.category}
-        </span>
-
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
           {research.title}
         </h1>
@@ -36,7 +37,7 @@ export default async function ResearchDetailPage({
         </p>
 
         {research.image_url && (
-          <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 mb-8">
+          <div className={`${imgFloat} rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800`} style={imgStyle}>
             <img
               src={research.image_url}
               alt={research.title}

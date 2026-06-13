@@ -17,6 +17,9 @@ interface Props {
     excerpt: string;
     content: string;
     image_url?: string;
+    image_width?: number;
+    image_height?: number;
+    image_position?: string;
     author_name: string;
     status: string;
     featured: boolean;
@@ -32,6 +35,9 @@ export default function BlogForm({ initialData }: Props) {
     excerpt: initialData?.excerpt || "",
     content: initialData?.content || "",
     image_url: initialData?.image_url || "",
+    image_width: initialData?.image_width || undefined as number | undefined,
+    image_height: initialData?.image_height || undefined as number | undefined,
+    image_position: initialData?.image_position || "center",
     author_name: initialData?.author_name || "",
     status: initialData?.status || "draft",
     featured: initialData?.featured || false,
@@ -46,7 +52,7 @@ export default function BlogForm({ initialData }: Props) {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = {
+      const payload: any = {
         ...form,
         status: form.status as "draft" | "published",
         slug: form.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
@@ -67,59 +73,42 @@ export default function BlogForm({ initialData }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
-      <Input
-        label="Title"
-        required
-        value={form.title}
-        onChange={(e) => setForm({ ...form, title: e.target.value })}
-      />
-      <Input
-        label="Author Name"
-        required
-        value={form.author_name}
-        onChange={(e) => setForm({ ...form, author_name: e.target.value })}
-      />
-      <TextArea
-        label="Excerpt"
-        required
-        value={form.excerpt}
-        onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-      />
-      <RichTextEditor
-        label="Content"
-        value={form.content}
-        onChange={(content) => setForm({ ...form, content })}
-      />
+      <Input label="Title" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+      <Input label="Author Name" required value={form.author_name} onChange={(e) => setForm({ ...form, author_name: e.target.value })} />
+      <TextArea label="Excerpt" required value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} />
+      <RichTextEditor label="Content" value={form.content} onChange={(content) => setForm({ ...form, content })} />
       <ImageUploader onUpload={handleImageUpload} label="Image" />
+      {form.image_url && (
+        <div className="mt-2 space-y-3">
+          <img src={form.image_url} alt="" className="h-32 rounded-lg object-cover" />
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Width (px)" type="number" value={form.image_width || ""} onChange={(e) => setForm({ ...form, image_width: parseInt(e.target.value) || undefined })} />
+            <Input label="Height (px)" type="number" value={form.image_height || ""} onChange={(e) => setForm({ ...form, image_height: parseInt(e.target.value) || undefined })} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alignment</label>
+            <select value={form.image_position} onChange={(e) => setForm({ ...form, image_position: e.target.value })} className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </div>
+          <button type="button" onClick={() => setForm({ ...form, image_url: "", image_width: undefined, image_height: undefined, image_position: "center" })} className="text-xs text-red-600 hover:text-red-800">Remove image</button>
+        </div>
+      )}
       <div className="flex items-center gap-6">
         <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <input
-            type="checkbox"
-            checked={form.status === "published"}
-            onChange={(e) =>
-              setForm({ ...form, status: e.target.checked ? "published" : "draft" })
-            }
-            className="rounded border-gray-300"
-          />
+          <input type="checkbox" checked={form.status === "published"} onChange={(e) => setForm({ ...form, status: e.target.checked ? "published" : "draft" })} className="rounded border-gray-300" />
           Published
         </label>
         <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <input
-            type="checkbox"
-            checked={form.featured}
-            onChange={(e) => setForm({ ...form, featured: e.target.checked })}
-            className="rounded border-gray-300"
-          />
+          <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} className="rounded border-gray-300" />
           Featured
         </label>
       </div>
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={loading}>
-          {loading ? "Saving..." : initialData ? "Update" : "Create"}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => router.push("/admin/blog")}>
-          Cancel
-        </Button>
+        <Button type="submit" disabled={loading}>{loading ? "Saving..." : initialData ? "Update" : "Create"}</Button>
+        <Button type="button" variant="outline" onClick={() => router.push("/admin/blog")}>Cancel</Button>
       </div>
     </form>
   );

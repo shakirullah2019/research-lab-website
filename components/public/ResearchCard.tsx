@@ -21,9 +21,6 @@ export default function ResearchCard({ research }: Props) {
         </div>
       )}
       <div className="p-5">
-        <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 mb-3">
-          {research.category}
-        </span>
         <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors mb-2">
           {research.title}
         </h3>

@@ -13,6 +13,11 @@ export default async function BlogDetailPage({
 
   if (!post) notFound();
 
+  const imgStyle: React.CSSProperties = {};
+  if (post.image_width) imgStyle.maxWidth = post.image_width;
+  if (post.image_height) imgStyle.maxHeight = post.image_height;
+  const imgFloat = post.image_position === "left" ? "float-left mr-6 mb-4" : post.image_position === "right" ? "float-right ml-6 mb-4" : "mx-auto mb-8";
+
   return (
     <article className="py-16 md:py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,7 +42,7 @@ export default async function BlogDetailPage({
         </h1>
 
         {post.image_url && (
-          <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 mb-8">
+          <div className={`${imgFloat} rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800`} style={imgStyle}>
             <img
               src={post.image_url}
               alt={post.title}

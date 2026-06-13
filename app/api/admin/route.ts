@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { action, table, data, id } = body;
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const supabase = await createServiceClient();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || profile.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { action, table, data, id } = body;
 
     let result;
 
@@ -29,26 +44,6 @@ export async function POST(request: NextRequest) {
       case "delete":
         result = await supabase.from(table).delete().eq("id", id);
         break;
-      case "upload":
-        const { fileName, fileType, fileSize, fileBuffer } = data;
-        const ext = fileName.split(".").pop();
-        const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-        const buffer = Buffer.from(fileBuffer.data);
-        const { error: uploadError } = await supabase.storage
-          .from("public")
-          .upload(path, buffer, { contentType: fileType });
-        if (uploadError) throw uploadError;
-        const { data: { publicUrl } } = supabase.storage
-          .from("public")
-          .getPublicUrl(path);
-        const { error: dbError } = await supabase.from("media_files").insert({
-          name: fileName,
-          url: publicUrl,
-          type: fileType.startsWith("image/") ? "image" : fileType === "application/pdf" ? "pdf" : "other",
-          size: fileSize,
-        }).select();
-        if (dbError) throw dbError;
-        return NextResponse.json({ data: { url: publicUrl } });
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }

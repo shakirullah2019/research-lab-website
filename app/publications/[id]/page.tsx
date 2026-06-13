@@ -13,6 +13,11 @@ export default async function PublicationDetailPage({
 
   if (!publication) notFound();
 
+  const imgStyle: React.CSSProperties = {};
+  if (publication.image_width) imgStyle.maxWidth = publication.image_width;
+  if (publication.image_height) imgStyle.maxHeight = publication.image_height;
+  const imgFloat = publication.image_position === "left" ? "float-left mr-6 mb-4" : publication.image_position === "right" ? "float-right ml-6 mb-4" : "mx-auto mb-6";
+
   return (
     <article className="py-16 md:py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -64,6 +69,16 @@ export default async function PublicationDetailPage({
             </a>
           )}
         </div>
+
+        {publication.image_url && (
+          <div className={`${imgFloat} rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800`} style={imgStyle}>
+            <img
+              src={publication.image_url}
+              alt={publication.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3">

@@ -28,14 +28,6 @@ export default function ResearchList() {
   const columns = [
     { header: "Title", accessor: (r: Research) => r.title },
     {
-      header: "Category",
-      accessor: (r: Research) => (
-        <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-          {r.category}
-        </span>
-      ),
-    },
-    {
       header: "Status",
       accessor: (r: Research) => (
         <span

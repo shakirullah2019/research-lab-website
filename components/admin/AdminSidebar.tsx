@@ -25,6 +25,7 @@ const sidebarLinks = [
   { label: "Research", href: "/admin/research", icon: FlaskConical },
   { label: "Publications", href: "/admin/publications", icon: BookOpen },
   { label: "Blog Posts", href: "/admin/blog", icon: Newspaper },
+  { label: "Homepage", href: "/admin/homepage", icon: LayoutDashboard },
   { label: "Team", href: "/admin/team", icon: Users },
   { label: "Certificates", href: "/admin/certificates", icon: Award },
   { label: "Media", href: "/admin/media", icon: Image },

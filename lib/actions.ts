@@ -5,6 +5,7 @@ import type {
   BlogPost,
   TeamMember,
   Certificate,
+  HomepageContent,
 } from "./types";
 
 async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
@@ -302,4 +303,34 @@ export async function getMediaFiles() {
       .order("created_at", { ascending: false });
     return data ?? [];
   }, []);
+}
+
+// ─── Homepage Content ───
+export async function getHomepageContent() {
+  return safeQuery(async () => {
+    const supabase = await createServiceClient();
+    const { data } = await supabase
+      .from("homepage_content")
+      .select("*")
+      .limit(1)
+      .single();
+    return data as HomepageContent | null;
+  }, null);
+}
+
+export async function saveHomepageContent(
+  id: string | null,
+  data: Partial<HomepageContent>
+) {
+  const supabase = await createServiceClient();
+  if (id) {
+    const { error } = await supabase
+      .from("homepage_content")
+      .update(data)
+      .eq("id", id);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from("homepage_content").insert(data);
+    if (error) throw error;
+  }
 }
