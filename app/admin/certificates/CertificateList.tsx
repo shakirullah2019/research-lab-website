@@ -9,10 +9,16 @@ import type { Certificate } from "@/lib/types";
 export default function CertificateList() {
   const router = useRouter();
   const [data, setData] = useState<Certificate[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    const res = await list("certificates");
-    setData(res ?? []);
+    try {
+      setError(null);
+      const res = await list("certificates");
+      setData(res ?? []);
+    } catch (err: any) {
+      setError(err.message || "Failed to load certificates.");
+    }
   }, []);
 
   useEffect(() => {
@@ -21,8 +27,12 @@ export default function CertificateList() {
 
   const handleDelete = async (item: Certificate) => {
     if (!confirm("Delete this certificate?")) return;
-    await remove("certificates", item.id);
-    fetchData();
+    try {
+      await remove("certificates", item.id);
+      fetchData();
+    } catch (err: any) {
+      setError(err.message || "Failed to delete.");
+    }
   };
 
   const columns = [
@@ -36,12 +46,19 @@ export default function CertificateList() {
   ];
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      keyExtractor={(c) => c.id}
-      onEdit={(c) => router.push(`/admin/certificates/${c.id}/edit`)}
-      onDelete={handleDelete}
-    />
+    <div>
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+      <DataTable
+        columns={columns}
+        data={data}
+        keyExtractor={(c) => c.id}
+        onEdit={(c) => router.push(`/admin/certificates/${c.id}/edit`)}
+        onDelete={handleDelete}
+      />
+    </div>
   );
 }

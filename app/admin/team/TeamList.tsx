@@ -9,10 +9,16 @@ import type { TeamMember } from "@/lib/types";
 export default function TeamList() {
   const router = useRouter();
   const [data, setData] = useState<TeamMember[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    const res = await list("team_members");
-    setData(res ?? []);
+    try {
+      setError(null);
+      const res = await list("team_members");
+      setData(res ?? []);
+    } catch (err: any) {
+      setError(err.message || "Failed to load team members.");
+    }
   }, []);
 
   useEffect(() => {
@@ -21,8 +27,12 @@ export default function TeamList() {
 
   const handleDelete = async (item: TeamMember) => {
     if (!confirm("Delete this team member?")) return;
-    await remove("team_members", item.id);
-    fetchData();
+    try {
+      await remove("team_members", item.id);
+      fetchData();
+    } catch (err: any) {
+      setError(err.message || "Failed to delete.");
+    }
   };
 
   const columns = [
@@ -46,12 +56,19 @@ export default function TeamList() {
   ];
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      keyExtractor={(m) => m.id}
-      onEdit={(m) => router.push(`/admin/team/${m.id}/edit`)}
-      onDelete={handleDelete}
-    />
+    <div>
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+      <DataTable
+        columns={columns}
+        data={data}
+        keyExtractor={(m) => m.id}
+        onEdit={(m) => router.push(`/admin/team/${m.id}/edit`)}
+        onDelete={handleDelete}
+      />
+    </div>
   );
 }

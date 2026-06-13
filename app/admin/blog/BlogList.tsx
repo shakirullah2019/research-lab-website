@@ -9,10 +9,16 @@ import type { BlogPost } from "@/lib/types";
 export default function BlogList() {
   const router = useRouter();
   const [data, setData] = useState<BlogPost[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    const res = await list("blog_posts");
-    setData(res ?? []);
+    try {
+      setError(null);
+      const res = await list("blog_posts");
+      setData(res ?? []);
+    } catch (err: any) {
+      setError(err.message || "Failed to load blog posts.");
+    }
   }, []);
 
   useEffect(() => {
@@ -21,8 +27,12 @@ export default function BlogList() {
 
   const handleDelete = async (item: BlogPost) => {
     if (!confirm("Delete this blog post?")) return;
-    await remove("blog_posts", item.id);
-    fetchData();
+    try {
+      await remove("blog_posts", item.id);
+      fetchData();
+    } catch (err: any) {
+      setError(err.message || "Failed to delete.");
+    }
   };
 
   const columns = [
@@ -50,12 +60,19 @@ export default function BlogList() {
   ];
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      keyExtractor={(b) => b.id}
-      onEdit={(b) => router.push(`/admin/blog/${b.id}/edit`)}
-      onDelete={handleDelete}
-    />
+    <div>
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+      <DataTable
+        columns={columns}
+        data={data}
+        keyExtractor={(b) => b.id}
+        onEdit={(b) => router.push(`/admin/blog/${b.id}/edit`)}
+        onDelete={handleDelete}
+      />
+    </div>
   );
 }

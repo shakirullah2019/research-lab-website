@@ -9,10 +9,16 @@ import type { Research } from "@/lib/types";
 export default function ResearchList() {
   const router = useRouter();
   const [data, setData] = useState<Research[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    const res = await list("research");
-    setData(res ?? []);
+    try {
+      setError(null);
+      const res = await list("research");
+      setData(res ?? []);
+    } catch (err: any) {
+      setError(err.message || "Failed to load research projects.");
+    }
   }, []);
 
   useEffect(() => {
@@ -21,8 +27,12 @@ export default function ResearchList() {
 
   const handleDelete = async (item: Research) => {
     if (!confirm("Delete this research project?")) return;
-    await remove("research", item.id);
-    fetchData();
+    try {
+      await remove("research", item.id);
+      fetchData();
+    } catch (err: any) {
+      setError(err.message || "Failed to delete.");
+    }
   };
 
   const columns = [
@@ -48,12 +58,19 @@ export default function ResearchList() {
   ];
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      keyExtractor={(r) => r.id}
-      onEdit={(r) => router.push(`/admin/research/${r.id}/edit`)}
-      onDelete={handleDelete}
-    />
+    <div>
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+      <DataTable
+        columns={columns}
+        data={data}
+        keyExtractor={(r) => r.id}
+        onEdit={(r) => router.push(`/admin/research/${r.id}/edit`)}
+        onDelete={handleDelete}
+      />
+    </div>
   );
 }
