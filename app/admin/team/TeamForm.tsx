@@ -33,6 +33,7 @@ interface Props {
 export default function TeamForm({ initialData }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: initialData?.name || "",
     slug: initialData?.slug || "",
@@ -73,8 +74,9 @@ export default function TeamForm({ initialData }: Props) {
       }
       router.push("/admin/team");
       router.refresh();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || "Failed to save.");
     } finally {
       setLoading(false);
     }
@@ -82,6 +84,11 @@ export default function TeamForm({ initialData }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4">
         <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <Input label="Role" required placeholder="e.g., Research Scientist" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />

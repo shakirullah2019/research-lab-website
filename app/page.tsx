@@ -11,6 +11,7 @@ import {
   getActiveTeamMembers,
   getHomepageContent,
 } from "@/lib/actions";
+import type { HomepageSection } from "@/lib/types";
 
 export default async function HomePage() {
   const [research, publications, blogs, team, homepage] = await Promise.all([
@@ -34,13 +35,27 @@ export default async function HomePage() {
         image: null as string | null,
       };
 
-  const sections = homepage?.sections || [];
+  const sections: HomepageSection[] = homepage?.sections || [];
+
+  function sectionImageStyle(section: HomepageSection): React.CSSProperties {
+    const style: React.CSSProperties = {};
+    if (section.image_width) style.maxWidth = section.image_width;
+    if (section.image_height) style.maxHeight = section.image_height;
+    return style;
+  }
+
+  function sectionImageClass(section: HomepageSection): string {
+    const pos = section.image_position || "center";
+    if (pos === "left") return "float-left mr-6 mb-4";
+    if (pos === "right") return "float-right ml-6 mb-4";
+    return "mx-auto mb-6";
+  }
 
   return (
     <>
       {/* Hero Section */}
       <section
-        className={`relative bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950 text-white overflow-hidden`}
+        className="relative bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950 text-white overflow-hidden"
       >
         {hero.image && (
           <div className="absolute inset-0">
@@ -79,15 +94,24 @@ export default async function HomePage() {
       </section>
 
       {/* Dynamic Sections */}
-      {sections.map((section: any) => {
+      {sections.map((section) => {
+        if (!section.visible) return null;
+
         if (section.content_type === "featured_research") {
           return (
             <section key={section.id} className="py-16 md:py-20 bg-gray-50 dark:bg-gray-900/50">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                    {section.title || "Featured Research"}
-                  </h2>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                      {section.title || "Featured Research"}
+                    </h2>
+                    {section.description && (
+                      <p className="text-gray-500 dark:text-gray-400 mt-2">
+                        {section.description}
+                      </p>
+                    )}
+                  </div>
                   <Link
                     href="/research"
                     className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center gap-1"
@@ -113,9 +137,16 @@ export default async function HomePage() {
             <section key={section.id} className="py-16 md:py-20">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                    {section.title || "Latest Publications"}
-                  </h2>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                      {section.title || "Latest Publications"}
+                    </h2>
+                    {section.description && (
+                      <p className="text-gray-500 dark:text-gray-400 mt-2">
+                        {section.description}
+                      </p>
+                    )}
+                  </div>
                   <Link
                     href="/publications"
                     className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center gap-1"
@@ -139,12 +170,31 @@ export default async function HomePage() {
         return (
           <section key={section.id} className="py-16 md:py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
+              {section.image_url && (
+                <div className={`${sectionImageClass(section)} rounded-xl overflow-hidden`} style={sectionImageStyle(section)}>
+                  <img
+                    src={section.image_url}
+                    alt={section.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 {section.title}
               </h2>
-              <p className="text-lg text-gray-500 dark:text-gray-400">
+              <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl">
                 {section.description}
               </p>
+              {section.button_text && section.button_link && (
+                <div className="mt-6">
+                  <Link
+                    href={section.button_link}
+                    className="inline-flex items-center justify-center rounded-lg font-medium transition-colors px-5 py-2.5 text-sm bg-blue-900 text-white hover:bg-blue-800 dark:bg-blue-700 dark:hover:bg-blue-600"
+                  >
+                    {section.button_text} <ArrowRight size={16} className="ml-1" />
+                  </Link>
+                </div>
+              )}
             </div>
           </section>
         );

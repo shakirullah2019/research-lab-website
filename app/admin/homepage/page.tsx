@@ -16,6 +16,8 @@ interface Section {
   image_width?: number;
   image_height?: number;
   image_position?: "left" | "center" | "right";
+  button_text?: string;
+  button_link?: string;
   content_type: "text" | "featured_research" | "featured_publications";
   order_index: number;
   visible: boolean;
@@ -29,6 +31,7 @@ export default function HomepageEditor() {
   const [heroDescription, setHeroDescription] = useState("");
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [sections, setSections] = useState<Section[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -43,6 +46,7 @@ export default function HomepageEditor() {
       }
     } catch (err) {
       console.error(err);
+      setError("Failed to load homepage content.");
     }
   }, []);
 
@@ -53,6 +57,13 @@ export default function HomepageEditor() {
   const handleImageUpload = async (file: File) => {
     const url = await uploadFile(file);
     setHeroImageUrl(url);
+  };
+
+  const handleSectionImageUpload = async (sectionId: string, file: File) => {
+    const url = await uploadFile(file);
+    setSections((prev) =>
+      prev.map((s) => (s.id === sectionId ? { ...s, image_url: url } : s))
+    );
   };
 
   const addSection = () => {
@@ -80,6 +91,7 @@ export default function HomepageEditor() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
       const { saveHomepageContent } = await import("@/lib/actions");
       await saveHomepageContent(homepageId, {
@@ -90,9 +102,9 @@ export default function HomepageEditor() {
       });
       router.refresh();
       alert("Homepage saved successfully!");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to save homepage.");
+      setError(err.message || "Failed to save homepage.");
     } finally {
       setLoading(false);
     }
@@ -103,6 +115,11 @@ export default function HomepageEditor() {
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
         Homepage Editor
       </h1>
+      {error && (
+        <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
         {/* Hero Section */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
@@ -198,6 +215,79 @@ export default function HomepageEditor() {
                       updateSection(section.id, "description", e.target.value)
                     }
                   />
+
+                  {/* Section Image */}
+                  <ImageUploader
+                    onUpload={(file) => handleSectionImageUpload(section.id, file)}
+                    label="Section Image"
+                  />
+                  {section.image_url && (
+                    <div className="mt-2 space-y-2 border border-gray-100 dark:border-gray-700 rounded-lg p-3">
+                      <img src={section.image_url} alt="" className="h-24 rounded-lg object-cover" />
+                      <div className="grid grid-cols-2 gap-3">
+                        <Input
+                          label="Width (px)"
+                          type="number"
+                          value={section.image_width || ""}
+                          onChange={(e) =>
+                            updateSection(section.id, "image_width", parseInt(e.target.value) || undefined)
+                          }
+                        />
+                        <Input
+                          label="Height (px)"
+                          type="number"
+                          value={section.image_height || ""}
+                          onChange={(e) =>
+                            updateSection(section.id, "image_height", parseInt(e.target.value) || undefined)
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Alignment
+                        </label>
+                        <select
+                          value={section.image_position || "center"}
+                          onChange={(e) =>
+                            updateSection(section.id, "image_position", e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
+                        >
+                          <option value="left">Left</option>
+                          <option value="center">Center</option>
+                          <option value="right">Right</option>
+                        </select>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateSection(section.id, "image_url", undefined)
+                        }
+                        className="text-xs text-red-600 hover:text-red-800"
+                      >
+                        Remove image
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Button fields */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label="Button Text"
+                      value={section.button_text || ""}
+                      onChange={(e) =>
+                        updateSection(section.id, "button_text", e.target.value)
+                      }
+                    />
+                    <Input
+                      label="Button Link"
+                      value={section.button_link || ""}
+                      onChange={(e) =>
+                        updateSection(section.id, "button_link", e.target.value)
+                      }
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Content Type

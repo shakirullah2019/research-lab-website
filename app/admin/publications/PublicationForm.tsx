@@ -31,6 +31,7 @@ interface Props {
 export default function PublicationForm({ initialData }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: initialData?.title || "",
     slug: initialData?.slug || "",
@@ -69,8 +70,9 @@ export default function PublicationForm({ initialData }: Props) {
       }
       router.push("/admin/publications");
       router.refresh();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || "Failed to save.");
     } finally {
       setLoading(false);
     }
@@ -78,6 +80,11 @@ export default function PublicationForm({ initialData }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
       <Input
         label="Title"
         required

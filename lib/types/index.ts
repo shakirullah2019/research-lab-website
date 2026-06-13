@@ -131,6 +131,8 @@ export interface HomepageSection {
   image_width?: number;
   image_height?: number;
   image_position?: "left" | "center" | "right";
+  button_text?: string;
+  button_link?: string;
   content_type: "text" | "featured_research" | "featured_publications";
   order_index: number;
   visible: boolean;

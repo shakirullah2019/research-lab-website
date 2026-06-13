@@ -27,8 +27,22 @@ export default function MediaPage() {
   }, [fetchData]);
 
   const handleUpload = async (file: File) => {
-    await uploadFile(file);
-    fetchData();
+    try {
+      await uploadFile(file);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (item: MediaFile) => {
+    if (!confirm("Delete this file?")) return;
+    try {
+      await remove("media_files", item.id);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const columns = [
@@ -75,6 +89,7 @@ export default function MediaPage() {
           columns={columns}
           data={data}
           keyExtractor={(m) => m.id}
+          onDelete={handleDelete}
         />
       </div>
     </div>
