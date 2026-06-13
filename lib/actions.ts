@@ -273,7 +273,7 @@ export async function deleteCertificate(id: string) {
 }
 
 // ─── Media / Upload ───
-export async function uploadFile(file: File, bucket: string = "public") {
+export async function uploadFile(file: File, bucket: string = "media") {
   const supabase = await createServiceClient();
   const ext = file.name.split(".").pop();
   const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;

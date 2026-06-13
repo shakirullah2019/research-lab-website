@@ -15,13 +15,13 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const { error: uploadError } = await supabase.storage
-      .from("public")
+      .from("media")
       .upload(path, buffer, { contentType: file.type });
     if (uploadError) throw uploadError;
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from("public").getPublicUrl(path);
+    } = supabase.storage.from("media").getPublicUrl(path);
 
     const { error: dbError } = await supabase.from("media_files").insert({
       name: file.name,

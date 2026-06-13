@@ -29,7 +29,7 @@ export default function ImageUploader({
     try {
       await onUpload(file);
     } catch (err: any) {
-      setError(err.message || "Upload failed. Check that a storage bucket named 'public' exists in Supabase.");
+      setError(err.message || "Upload failed. Check that a storage bucket named 'media' exists in Supabase.");
       setPreview(null);
     } finally {
       setUploading(false);
