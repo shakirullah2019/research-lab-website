@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import TextArea from "@/components/ui/TextArea";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { create, update, uploadFile } from "@/lib/api-client";
 
 interface Props {
   initialData?: {
@@ -46,7 +47,6 @@ export default function TeamForm({ initialData }: Props) {
   });
 
   const handleImageUpload = async (file: File) => {
-    const { uploadFile } = await import("@/lib/actions");
     const url = await uploadFile(file);
     setForm((prev) => ({ ...prev, image_url: url }));
   };
@@ -55,12 +55,16 @@ export default function TeamForm({ initialData }: Props) {
     e.preventDefault();
     setLoading(true);
     try {
-      const { saveTeamMember } = await import("@/lib/actions");
-      await saveTeamMember(initialData?.id || null, {
+      const payload = {
         ...form,
         status: form.status as "active" | "alumni",
         slug: form.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
-      });
+      };
+      if (initialData?.id) {
+        await update("team_members", initialData.id, payload);
+      } else {
+        await create("team_members", payload);
+      }
       router.push("/admin/team");
       router.refresh();
     } catch (err) {

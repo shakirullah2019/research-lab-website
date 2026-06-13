@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DataTable from "@/components/admin/DataTable";
+import { list, remove } from "@/lib/api-client";
 import type { Certificate } from "@/lib/types";
 
 export default function CertificateList() {
@@ -10,9 +11,8 @@ export default function CertificateList() {
   const [data, setData] = useState<Certificate[]>([]);
 
   const fetchData = useCallback(async () => {
-    const { getCertificateList } = await import("@/lib/actions");
-    const res = await getCertificateList();
-    setData(res);
+    const res = await list("certificates");
+    setData(res ?? []);
   }, []);
 
   useEffect(() => {
@@ -21,8 +21,7 @@ export default function CertificateList() {
 
   const handleDelete = async (item: Certificate) => {
     if (!confirm("Delete this certificate?")) return;
-    const { deleteCertificate } = await import("@/lib/actions");
-    await deleteCertificate(item.id);
+    await remove("certificates", item.id);
     fetchData();
   };
 

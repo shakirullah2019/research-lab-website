@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DataTable from "@/components/admin/DataTable";
+import { list, remove } from "@/lib/api-client";
 import type { BlogPost } from "@/lib/types";
 
 export default function BlogList() {
@@ -10,9 +11,8 @@ export default function BlogList() {
   const [data, setData] = useState<BlogPost[]>([]);
 
   const fetchData = useCallback(async () => {
-    const { getBlogList } = await import("@/lib/actions");
-    const res = await getBlogList();
-    setData(res);
+    const res = await list("blog_posts");
+    setData(res ?? []);
   }, []);
 
   useEffect(() => {
@@ -21,8 +21,7 @@ export default function BlogList() {
 
   const handleDelete = async (item: BlogPost) => {
     if (!confirm("Delete this blog post?")) return;
-    const { deleteBlogPost } = await import("@/lib/actions");
-    await deleteBlogPost(item.id);
+    await remove("blog_posts", item.id);
     fetchData();
   };
 

@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import TextArea from "@/components/ui/TextArea";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { create, update, uploadFile } from "@/lib/api-client";
 
 interface Props {
   initialData?: {
@@ -36,7 +37,6 @@ export default function CertificateForm({ initialData }: Props) {
   });
 
   const handleImageUpload = async (file: File) => {
-    const { uploadFile } = await import("@/lib/actions");
     const url = await uploadFile(file);
     setForm((prev) => ({ ...prev, image_url: url }));
   };
@@ -45,8 +45,11 @@ export default function CertificateForm({ initialData }: Props) {
     e.preventDefault();
     setLoading(true);
     try {
-      const { saveCertificate } = await import("@/lib/actions");
-      await saveCertificate(initialData?.id || null, form);
+      if (initialData?.id) {
+        await update("certificates", initialData.id, form);
+      } else {
+        await create("certificates", form);
+      }
       router.push("/admin/certificates");
       router.refresh();
     } catch (err) {

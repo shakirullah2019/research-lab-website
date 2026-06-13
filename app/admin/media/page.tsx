@@ -3,15 +3,23 @@
 import { useEffect, useState, useCallback } from "react";
 import ImageUploader from "@/components/admin/ImageUploader";
 import DataTable from "@/components/admin/DataTable";
-import type { MediaFile } from "@/lib/types";
+import { list, remove, uploadFile } from "@/lib/api-client";
+
+interface MediaFile {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+  created_at: string;
+}
 
 export default function MediaPage() {
   const [data, setData] = useState<MediaFile[]>([]);
 
   const fetchData = useCallback(async () => {
-    const { getMediaFiles } = await import("@/lib/actions");
-    const res = await getMediaFiles();
-    setData(res);
+    const res = await list("media_files");
+    setData(res ?? []);
   }, []);
 
   useEffect(() => {
@@ -19,7 +27,6 @@ export default function MediaPage() {
   }, [fetchData]);
 
   const handleUpload = async (file: File) => {
-    const { uploadFile } = await import("@/lib/actions");
     await uploadFile(file);
     fetchData();
   };

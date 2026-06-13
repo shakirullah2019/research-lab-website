@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DataTable from "@/components/admin/DataTable";
+import { list, remove } from "@/lib/api-client";
 import type { Publication } from "@/lib/types";
 
 export default function PublicationList() {
@@ -10,9 +11,8 @@ export default function PublicationList() {
   const [data, setData] = useState<Publication[]>([]);
 
   const fetchData = useCallback(async () => {
-    const { getPublicationList } = await import("@/lib/actions");
-    const res = await getPublicationList();
-    setData(res);
+    const res = await list("publications");
+    setData(res ?? []);
   }, []);
 
   useEffect(() => {
@@ -21,8 +21,7 @@ export default function PublicationList() {
 
   const handleDelete = async (item: Publication) => {
     if (!confirm("Delete this publication?")) return;
-    const { deletePublication } = await import("@/lib/actions");
-    await deletePublication(item.id);
+    await remove("publications", item.id);
     fetchData();
   };
 

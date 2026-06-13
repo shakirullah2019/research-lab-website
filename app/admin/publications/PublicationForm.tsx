@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import TextArea from "@/components/ui/TextArea";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { create, update, uploadFile } from "@/lib/api-client";
 
 interface Props {
   initialData?: {
@@ -42,7 +43,6 @@ export default function PublicationForm({ initialData }: Props) {
   });
 
   const handleImageUpload = async (file: File) => {
-    const { uploadFile } = await import("@/lib/actions");
     const url = await uploadFile(file);
     setForm((prev) => ({ ...prev, image_url: url }));
   };
@@ -51,12 +51,16 @@ export default function PublicationForm({ initialData }: Props) {
     e.preventDefault();
     setLoading(true);
     try {
-      const { savePublication } = await import("@/lib/actions");
-      await savePublication(initialData?.id || null, {
+      const payload = {
         ...form,
         status: form.status as "draft" | "published",
         slug: form.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
-      });
+      };
+      if (initialData?.id) {
+        await update("publications", initialData.id, payload);
+      } else {
+        await create("publications", payload);
+      }
       router.push("/admin/publications");
       router.refresh();
     } catch (err) {

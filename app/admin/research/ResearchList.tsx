@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DataTable from "@/components/admin/DataTable";
+import { list, remove } from "@/lib/api-client";
 import type { Research } from "@/lib/types";
 
 export default function ResearchList() {
@@ -10,9 +11,8 @@ export default function ResearchList() {
   const [data, setData] = useState<Research[]>([]);
 
   const fetchData = useCallback(async () => {
-    const { getResearchList } = await import("@/lib/actions");
-    const res = await getResearchList();
-    setData(res);
+    const res = await list("research");
+    setData(res ?? []);
   }, []);
 
   useEffect(() => {
@@ -21,8 +21,7 @@ export default function ResearchList() {
 
   const handleDelete = async (item: Research) => {
     if (!confirm("Delete this research project?")) return;
-    const { deleteResearch } = await import("@/lib/actions");
-    await deleteResearch(item.id);
+    await remove("research", item.id);
     fetchData();
   };
 

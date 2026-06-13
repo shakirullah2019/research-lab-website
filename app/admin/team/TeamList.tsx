@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DataTable from "@/components/admin/DataTable";
+import { list, remove } from "@/lib/api-client";
 import type { TeamMember } from "@/lib/types";
 
 export default function TeamList() {
@@ -10,9 +11,8 @@ export default function TeamList() {
   const [data, setData] = useState<TeamMember[]>([]);
 
   const fetchData = useCallback(async () => {
-    const { getTeamList } = await import("@/lib/actions");
-    const res = await getTeamList();
-    setData(res);
+    const res = await list("team_members");
+    setData(res ?? []);
   }, []);
 
   useEffect(() => {
@@ -21,8 +21,7 @@ export default function TeamList() {
 
   const handleDelete = async (item: TeamMember) => {
     if (!confirm("Delete this team member?")) return;
-    const { deleteTeamMember } = await import("@/lib/actions");
-    await deleteTeamMember(item.id);
+    await remove("team_members", item.id);
     fetchData();
   };
 
